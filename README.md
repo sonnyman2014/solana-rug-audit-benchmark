@@ -14,8 +14,9 @@ Measured with [`bench.py`](./bench.py) across 8 real Solana mainnet mints (`BONK
 
 | Transport Mode | Requests (`ok`) | Server `audit_ms` **p50** | Server `audit_ms` **p95** | Client RTT **p50** | Client RTT **Mean** | Client RTT **Min** | Client RTT **p95** | Throughput |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **HTTP/1.1 Keep-Alive** (`bench.py`, recommended for bots) | `200 / 200` (`100%`) | **`4.0 ms`** | **`4.0 ms`** | **`69.61 ms`** | **`80.18 ms`** | `12.35 ms` | `184.89 ms` | `12.40 req/s` |
-| **Cold Socket (`--no-keepalive`)** (`Connection: close`) | `200 / 200` (`100%`) | **`4.0 ms`** | **`4.0 ms`** | **`54.03 ms`** | **`105.92 ms`** | `13.12 ms` | `447.87 ms` | `9.42 req/s` |
+| **Live Public HTTPS Tunnel** (`awards-northern-needed-rom.trycloudflare.com/api/audit`) | `50 / 50` (`100%`) | **`4.0 ms`** | **`4.0 ms`** | **`74.71 ms`** | **`80.20 ms`** | `59.15 ms` | **`110.87 ms`** | `12.15 req/s` |
+| **Origin HTTP/1.1 Keep-Alive** (`bench.py`, `n = 200`) | `200 / 200` (`100%`) | **`4.0 ms`** | **`4.0 ms`** | **`69.61 ms`** | **`80.18 ms`** | `12.35 ms` | `184.89 ms` | `12.40 req/s` |
+| **Origin Cold Socket (`--no-keepalive`)** (`Connection: close`) | `200 / 200` (`100%`) | **`4.0 ms`** | **`4.0 ms`** | **`54.03 ms`** | **`105.92 ms`** | `13.12 ms` | `447.87 ms` | `9.42 req/s` |
 
 > **Endpoint Discovery Note**: `https://rentandrugshield.com` serves its static frontend via GitHub Pages CDN and publishes the active HTTPS backend bridge at [`https://rentandrugshield.com/live_endpoint.json`](https://rentandrugshield.com/live_endpoint.json) (`api_base + "/api/audit"`). Both `bench.py` and the quickstarts automatically resolve `live_endpoint.json` if a `POST` to the static CDN returns `HTTP 405`.
 
