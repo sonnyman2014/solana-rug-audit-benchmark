@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive &lt;120ms POST /api/audit Benchmark | Solana Rent &amp; Rug Shield</title>
+<style>
+:root{--bg:#0A0B0D;--card:#121418;--line:#23262d;--txt:#e9ebef;--mut:#9aa1ad;--acc:#2ee6a6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;padding:32px 20px}
+.wrap{max-width:860px;margin:0 auto}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin:16px 0}
+h1{font-size:28px;margin:0 0 8px}p{color:var(--mut);margin:0 0 14px}
+input{width:100%;background:#0d0f12;border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:11px 14px;font-size:14px;margin-bottom:10px}
+button{background:var(--acc);color:#04130d;border:0;padding:12px 20px;border-radius:999px;font-weight:600;cursor:pointer}
+pre{background:#0d0f12;border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.kpi{background:#0d0f12;border:1px solid var(--line);border-radius:12px;padding:12px}.kpi b{display:block;font-size:22px;color:var(--acc)}.kpi small{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Interactive <code>POST /api/audit</code> Latency Benchmark</h1>
+<p>Test real pre-buy 11-layer Solana token audit latency from your browser.</p>
+<div class="card">
+<label>Endpoint URL</label>
+<input id="ep" value="https://rentandrugshield.com/api/audit">
+<label>Optional X-API-Key (for &gt;1 run without 402 paywall)</label>
+<input id="key" placeholder="rsk_live_...">
+<label>Mint Address</label>
+<input id="mint" value="DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263">
+<label>Iterations</label>
+<input id="runs" type="number" value="10" min="1" max="100">
+<button id="go">Run Live Benchmark</button>
+<div class="kpis">
+<div class="kpi"><b id="p50">—</b><small>Client p50 (ms)</small></div>
+<div class="kpi"><b id="p95">—</b><small>Client p95 (ms)</small></div>
+<div class="kpi"><b id="srv">—</b><small>Server audit_ms p50</small></div>
+<div class="kpi"><b id="okc">—</b><small>HTTP 200 OK</small></div>
+</div>
+</div>
+<pre id="log">Ready.</pre>
+</div>
+<script>
+function pct(a,p){if(!a.length)return'—';var s=a.slice().sort(function(x,y){return x-y;}),k=(s.length-1)*p/100,f=Math.floor(k),c=Math.min(f+1,s.length-1);return(s[f]+(s[c]-s[f])*(k-f)).toFixed(1)+' ms';}
+document.getElementById('go').onclick=async function(){
+  var ep=document.getElementById('ep').value.trim(),key=document.getElementById('key').value.trim(),mint=document.getElementById('mint').value.trim(),n=parseInt(document.getElementById('runs').value,10)||5;
+  var log=document.getElementById('log');log.textContent='Running '+n+' iterations...\n';
+  var rtts=[],srvs=[],ok=0;
+  for(var i=0;i<n;i++){
+    var h={'Content-Type':'application/json'};if(key)h['X-API-Key']=key;
+    var t0=performance.now();
+    try{
+      var r=await fetch(ep,{method:'POST',headers:h,body:JSON.stringify({mint:mint})});
+      if(r.status===405&&ep.indexOf('rentandrugshield.com')!==-1){
+        var cfg=await(await fetch('https://rentandrugshield.com/live_endpoint.json')).json();
+        if(cfg&&cfg.api_base){ep=cfg.api_base.replace(/\/+$/,'')+'/api/audit';document.getElementById('ep').value=ep;t0=performance.now();r=await fetch(ep,{method:'POST',headers:h,body:JSON.stringify({mint:mint})});}
+      }
+      var d=await r.json(),dt=performance.now()-t0;
+      if(d.ok){ok++;rtts.push(dt);if(typeof d.audit_ms==='number')srvs.push(d.audit_ms);}
+      log.textContent+='#'+(i+1)+' HTTP '+r.status+' client='+dt.toFixed(1)+'ms server_audit_ms='+(d.audit_ms??'—')+' score='+(d.safety_score??d.code)+'\n';
+    }catch(e){log.textContent+='#'+(i+1)+' ERR '+e.message+'\n';}
+  }
+  document.getElementById('p50').textContent=pct(rtts,50);
+  document.getElementById('p95').textContent=pct(rtts,95);
+  document.getElementById('srv').textContent=pct(srvs,50);
+  document.getElementById('okc').textContent=ok+'/'+n;
+};
+</script>
+</body>
+</html>

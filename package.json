@@ -1,0 +1,12 @@
+{
+  "name": "solana-rug-audit-benchmark",
+  "version": "1.0.0",
+  "description": "Reproducible <120ms POST /api/audit latency benchmark & Python/TypeScript pre-buy quickstart for Solana trading bots",
+  "type": "module",
+  "scripts": {
+    "bench": "python3 bench.py",
+    "quickstart:py": "python3 quickstart.py",
+    "quickstart:ts": "node --loader tsx quickstart.ts"
+  },
+  "license": "MIT"
+}
